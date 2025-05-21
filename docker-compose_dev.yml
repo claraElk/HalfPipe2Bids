@@ -1,0 +1,9 @@
+services:
+  halfpipetobids:
+    container_name: halfpipetobids
+    image: halfpipetobids:dev
+    command: tail -f /dev/null
+    restart: unless-stopped
+    volumes:
+      - ./src:/app
+      - ./tests:/tests
