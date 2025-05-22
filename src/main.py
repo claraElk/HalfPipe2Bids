@@ -18,8 +18,6 @@ def main():
     Main function to run the project
     """
     logging.info("Starting the project...")
-    
-    # Add your main project logic here
 
     logging.info("Project finished successfully.")
 
