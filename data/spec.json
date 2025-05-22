@@ -1,0 +1,249 @@
+{
+    "halfpipe_version": "1.2.3.post1.dev29+gfe11a14b",
+    "schema_version": "3.0",
+    "timestamp": "2025-04-30_14-02",
+    "global_settings": {
+        "dummy_scans": 0,
+        "slice_timing": true,
+        "use_bbr": null,
+        "skull_strip_algorithm": "ants",
+        "run_mriqc": false,
+        "run_fmriprep": true,
+        "run_halfpipe": true,
+        "fd_thres": 0.5,
+        "anat_only": false,
+        "write_graph": false,
+        "hires": false,
+        "run_reconall": false,
+        "t2s_coreg": false,
+        "medial_surface_nan": false,
+        "bold2t1w_dof": 9,
+        "fmap_bspline": true,
+        "force_syn": false,
+        "longitudinal": false,
+        "regressors_all_comps": false,
+        "regressors_dvars_th": 1.5,
+        "regressors_fd_th": 0.5,
+        "skull_strip_fixed_seed": false,
+        "skull_strip_template": "OASIS30ANTs",
+        "run_aroma": true,
+        "aroma_err_on_warn": false,
+        "aroma_melodic_dim": -200,
+        "sloppy": false
+    },
+    "files": [
+        {
+            "path": "/home/pbergere/projects/def-cmoreau/All_user_common_folder/datasets/ds000030",
+            "datatype": "bids",
+            "metadata": {}
+        },
+        {
+            "path": "/home/pbergere/projects/def-cmoreau/All_user_common_folder/atlas/atlas_enigma/atlas-Schaefer2018Combined_dseg.nii.gz",
+            "datatype": "ref",
+            "suffix": "atlas",
+            "extension": ".nii.gz",
+            "tags": {
+                "desc": "schaefer400"
+            },
+            "metadata": {
+                "space": "MNI152NLin2009cAsym"
+            }
+        }
+    ],
+    "settings": [
+        {
+            "ica_aroma": false,
+            "grand_mean_scaling": {
+                "mean": 10000.0
+            },
+            "bandpass_filter": {
+                "type": "gaussian",
+                "hp_width": 125.0,
+                "lp_width": null
+            },
+            "confounds_removal": [
+                "c_comp_cor_0[0-4]"
+            ],
+            "name": "corrMatrix1Setting",
+            "filters": [
+                {
+                    "type": "tag",
+                    "action": "include",
+                    "entity": "task",
+                    "values": [
+                        "rest"
+                    ]
+                }
+            ],
+            "output_image": false
+        },
+        {
+            "ica_aroma": false,
+            "grand_mean_scaling": {
+                "mean": 10000.0
+            },
+            "bandpass_filter": {
+                "type": "gaussian",
+                "hp_width": 125.0,
+                "lp_width": null
+            },
+            "confounds_removal": [
+                "(trans|rot)_[xyz]",
+                "(trans|rot)_[xyz]_derivative1",
+                "(trans|rot)_[xyz]_power2",
+                "(trans|rot)_[xyz]_derivative1_power2",
+                "motion_outlier[0-9]+"
+            ],
+            "name": "corrMatrix2Setting",
+            "filters": [
+                {
+                    "type": "tag",
+                    "action": "include",
+                    "entity": "task",
+                    "values": [
+                        "rest"
+                    ]
+                }
+            ],
+            "output_image": false
+        },
+        {
+            "ica_aroma": false,
+            "grand_mean_scaling": {
+                "mean": 10000.0
+            },
+            "bandpass_filter": {
+                "type": "gaussian",
+                "hp_width": 125.0,
+                "lp_width": null
+            },
+            "confounds_removal": [
+                "(trans|rot)_[xyz]",
+                "(trans|rot)_[xyz]_derivative1",
+                "(trans|rot)_[xyz]_power2",
+                "(trans|rot)_[xyz]_derivative1_power2",
+                "motion_outlier[0-9]+",
+                "global_signal"
+            ],
+            "name": "corrMatrix3Setting",
+            "filters": [
+                {
+                    "type": "tag",
+                    "action": "include",
+                    "entity": "task",
+                    "values": [
+                        "rest"
+                    ]
+                }
+            ],
+            "output_image": false
+        },
+        {
+            "ica_aroma": false,
+            "grand_mean_scaling": {
+                "mean": 10000.0
+            },
+            "bandpass_filter": {
+                "type": "gaussian",
+                "hp_width": 125.0,
+                "lp_width": null
+            },
+            "confounds_removal": [
+                "(trans|rot)_[xyz]",
+                "(trans|rot)_[xyz]_derivative1",
+                "(trans|rot)_[xyz]_power2",
+                "(trans|rot)_[xyz]_derivative1_power2"
+            ],
+            "name": "corrMatrix4Setting",
+            "filters": [
+                {
+                    "type": "tag",
+                    "action": "include",
+                    "entity": "task",
+                    "values": [
+                        "rest"
+                    ]
+                }
+            ],
+            "output_image": false
+        },
+        {
+            "ica_aroma": false,
+            "grand_mean_scaling": {
+                "mean": 10000.0
+            },
+            "bandpass_filter": {
+                "type": "gaussian",
+                "hp_width": 125.0,
+                "lp_width": null
+            },
+            "confounds_removal": [
+                "(trans|rot)_[xyz]",
+                "(trans|rot)_[xyz]_derivative1",
+                "(trans|rot)_[xyz]_power2",
+                "(trans|rot)_[xyz]_derivative1_power2",
+                "global_signal"
+            ],
+            "name": "corrMatrix5Setting",
+            "filters": [
+                {
+                    "type": "tag",
+                    "action": "include",
+                    "entity": "task",
+                    "values": [
+                        "rest"
+                    ]
+                }
+            ],
+            "output_image": false
+        }
+    ],
+    "features": [
+        {
+            "name": "corrMatrix1",
+            "setting": "corrMatrix1Setting",
+            "type": "atlas_based_connectivity",
+            "atlases": [
+                "schaefer400"
+            ],
+            "min_region_coverage": 0.5
+        },
+        {
+            "name": "corrMatrix2",
+            "setting": "corrMatrix2Setting",
+            "type": "atlas_based_connectivity",
+            "atlases": [
+                "schaefer400"
+            ],
+            "min_region_coverage": 0.5
+        },
+        {
+            "name": "corrMatrix3",
+            "setting": "corrMatrix3Setting",
+            "type": "atlas_based_connectivity",
+            "atlases": [
+                "schaefer400"
+            ],
+            "min_region_coverage": 0.5
+        },
+        {
+            "name": "corrMatrix4",
+            "setting": "corrMatrix4Setting",
+            "type": "atlas_based_connectivity",
+            "atlases": [
+                "schaefer400"
+            ],
+            "min_region_coverage": 0.5
+        },
+        {
+            "name": "corrMatrix5",
+            "setting": "corrMatrix5Setting",
+            "type": "atlas_based_connectivity",
+            "atlases": [
+                "schaefer400"
+            ],
+            "min_region_coverage": 0.5
+        }
+    ],
+    "models": []
+}
