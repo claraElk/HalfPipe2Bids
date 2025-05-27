@@ -50,3 +50,7 @@ log_cli_level = "INFO"
 xfail_strict = true
 testpaths = ["test"]
 addopts = ["-ra", "--strict-config", "--strict-markers", "--doctest-modules", "-v"]
+markers = [
+    "smoke: smoke tests that will run on a downsampled real dataset (deselect with '-m \"not smoke\"')",
+]
+# filterwarnings = ["error"]
