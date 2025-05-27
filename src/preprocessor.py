@@ -9,7 +9,7 @@ import logging
 import glob
 import re
 import pandas as pd
-from cleaner import Cleaner
+from src.cleaner import Cleaner
 
 class Preprocessor:
     """Class to preprocess HalfPipe output files"""
