@@ -7,7 +7,7 @@ Main module for the project
 
 import os
 import logging
-from preprocessor import Preprocessor
+from src.preprocessor import Preprocessor
 
 logging.basicConfig(
     level=os.getenv('LOG_LEVEL', 'INFO').upper(),
