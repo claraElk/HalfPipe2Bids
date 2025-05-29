@@ -92,6 +92,17 @@ def workflow(args: argparse.Namespace) -> None:
     task = "task-rest"  # TODO: make this dynamic
     atlas_name = "schaefer400"  # TODO: make this dynamic
 
+    # nan_info = {key-> filename, value -> number of NaN values, or other information}
+    # for ts_file in path_all_timeseries_files:
+    #     nan_info[str(ts_file)] = load_timeseries_get_nan_info(ts_file, atlas_name, task)
+    # remaining_labels= clean_timeseries(nan_info)
+    
+    # for ts_file in path_all_timeseries_files:
+    #     metadata_path, bids_ts_path, bids_conn_path = create_bids_connectome_filenames()
+    #     create_metadata_json(metadata_path)
+    #     clean_timeseries(bids_ts_path, remaining_labels, bids_conn_path)
+
+    # original code; need to further refacot
     subjects = hp2b_utils.get_subjects(path_halfpipe_timeseries)
     for strategy in strategy_confounds.keys():
         hp2b_log.info(f"Processing strategy: {strategy}")
