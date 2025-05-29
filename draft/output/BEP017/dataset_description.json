@@ -1,10 +1,16 @@
 {
-    "Measure": "Pearson correlation",
-    "MeasureDescription": "Pearson correlation",
-    "Weighted": false,
-    "Directed": false,
-    "ValidDiagonal": true,
-    "StorageFormat": "Full",
-    "NonNegative": "",
-    "Code": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
+    "BIDSVersion": "1.9.0",
+    "License": null,
+    "Name": null,
+    "ReferencesAndLinks": [],
+    "DatasetDOI": null,
+    "DatasetType": "derivative",
+    "GeneratedBy": [
+        {
+            "Name": "Halfpipe2Bids",
+            "Version": "0.1",
+            "CodeURL": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
+        }
+    ],
+    "HowToAcknowledge": "Please refer to our repository: https://github.com/pbergeret12/HalfPipe2Bids/tree/main."
 }

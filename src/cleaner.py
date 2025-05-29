@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Module to clean timeseeries data.
+Module to clean timeseries data.
 """
 
 import os
