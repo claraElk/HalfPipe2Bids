@@ -25,6 +25,19 @@ Before running HalfPipe2BIDS, ensure the following dependencies are installed:
 - [Make](https://www.gnu.org/software/make/)
 
 ## Running HalfPipe2BIDS
+
+Install python package:
+
+```
+git clone git@github.com:pbergeret12/HalfPipe2Bids.git
+pip install -e .
+```
+
+Running the CLI:
+```
+python halfpipe2bids/run.py halfpipe2bids/tests/data/dataset-ds000030_halfpipe1.2.3dev outputs
+```
+
 ### Using Docker
 ### Using Singularity
 
