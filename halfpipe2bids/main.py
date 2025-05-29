@@ -1,128 +1,174 @@
-# main.py
+from __future__ import annotations
 
 import os
 import json
 import pandas as pd
+from typing import Any
+import argparse
+from pathlib import Path
+from typing import Sequence
 
-from config import *
-from functions import *
+from halfpipe2bids import __version__
 
-label_schaefer = load_label_schaefer(PATH_LABEL_SCHAEFER)
-sujets = get_subjects(PATH_HALFPIPE_TIMESERIES)
-strategy_confounds = get_strategy_confounds(PATH_SPEC)
+from halfpipe2bids import utils as hp2b_utils
 
-volume_path = os.path.join(PATH_ATLAS, 'atlas-Schaefer2018Combined_dseg.nii.gz')
+import os
+import argparse
+import logging
 
-for strategy in strategy_confounds.keys():
-    print(f"\n>>> Traitement de la stratégie : {strategy}")
+import json
+import pandas as pd
+from pathlib import Path
 
-    dict_timeseries = {}
-    dict_clean_timeseries = {}
-    dict_samplingfrequency = {}
-    missing_list = []
-    dict_mean_framewise = {}
-    dict_scrubvolume = {}
+hp2b_log = logging.getLogger("halfpipe2bids")
 
-    for sub in sujets:
-        try:
-            timeseries_path = f'{PATH_HALFPIPE_TIMESERIES}/{sub}/func/task-rest/{sub}_{TASK}_feature-{strategy}_atlas-{NAME_ATLAS}_timeseries.tsv'
-            json_path = f'{PATH_HALFPIPE_TIMESERIES}/{sub}/func/task-rest/{sub}_{TASK}_feature-{strategy}_atlas-{NAME_ATLAS}_timeseries.json'
-            confounds_path = f'{PATH_FMRIPREP_CONFOUNDS}/{sub}/func/{sub}_{TASK}_desc-confounds_timeseries.tsv'
+def global_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=(
+            "Convert neuroimaging data from the HalfPipe format to the standardized BIDS (Brain Imaging Data Structure) format"
+        ),
+    )
+    parser.add_argument(
+        "halfpipe_dir",
+        action="store",
+        type=Path,
+        help="The directory with the HALFPipe output.",
+    )
+    parser.add_argument(
+        "output_dir",
+        action="store",
+        type=Path,
+        help="The directory where the output files should be stored.",
+    )
+    parser.add_argument(
+        "analysis_level",
+        help="Level of the analysis that will be performed. Only group"
+        "level is available.",
+        choices=["group"],
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=__version__
+    )
+    parser.add_argument(
+        "--verbosity",
+        help="""
+        Verbosity level.
+        """,
+        required=False,
+        choices=[0, 1, 2, 3],
+        default=2,
+        type=int,
+        nargs=1,
+    )
+    return parser
 
-            df_timeseries = pd.read_csv(timeseries_path, sep='\t', header=None)
-            df_timeseries.columns = label_schaefer
-            dict_timeseries[sub] = df_timeseries
 
-            df_confounds = pd.read_csv(confounds_path, sep='\t')
-            dict_mean_framewise[sub] = df_confounds['framewise_displacement'].mean()
-            dict_scrubvolume[sub] = df_confounds.filter(like='motion_outlier').shape[1]
 
-            with open(json_path) as f:
-                meta = json.load(f)
-            dict_samplingfrequency[sub] = meta.get("SamplingFrequency", None)
+def workflow(args: argparse.Namespace) -> None:
+    hp2b_log.info(vars(args))
+    output_dir = args.output_dir
 
-        except FileNotFoundError:
-            missing_list.append(sub)
+    halfpipe_dir = args.halfpipe_dir
+    path_atlas = halfpipe_dir / "atlas"
+    path_derivatives = halfpipe_dir / "derivatives"
+    path_halfpipe_timeseries = path_derivatives / "halfpipe"
+    path_fmriprep = path_derivatives / "fmriprep" 
+    path_label_nii = path_atlas / "atlas-Schaefer2018Combined_dseg.tsv"
+    path_halfpipe_spec = halfpipe_dir / "spec.json"
+    atlas_nii_path = path_atlas / 'atlas-Schaefer2018Combined_dseg.nii.gz'
 
-    labels_to_drop = remove_bad_rois(dict_timeseries, label_schaefer)
-    remaining_labels = list(set(label_schaefer) - set(labels_to_drop))
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True, exist_ok=True)
+    # dataset level metadata
+    hp2b_utils.crearte_dataset_metadata_json(output_dir)
+    # strategy_confounds = get_strategy_confounds(path_halfpipe_spec)
+    label_atlas = hp2b_utils.load_label_schaefer(path_label_nii)
 
-    for sub in dict_timeseries:
-        dict_clean_timeseries[sub] = impute_and_clean(dict_timeseries[sub])
+    # get denosing strategies and labels from the HalfPipe spec file
+    strategy_confounds = hp2b_utils.get_strategy_confounds(path_halfpipe_spec)
 
-    dict_corr = {
-        sub: dict_clean_timeseries[sub].corr(method='pearson')
-        for sub in dict_clean_timeseries
-    }
+    # Look for a subject's timeseries in the HalfPipe directory and extract task, atlas
+    task = "task-rest"  # TODO: make this dynamic
+    atlas_name = "schaefer400"  # TODO: make this dynamic
 
-    nroi = len(remaining_labels)
-    regressors = strategy_confounds[strategy]
+    subjects = hp2b_utils.get_subjects(path_halfpipe_timeseries)
+    for strategy in strategy_confounds.keys():
+        hp2b_log.info(f"Processing strategy: {strategy}")
+        missing_list = []
+        dict_mean_framewise = {}
+        dict_scrubvolume = {}
+        dict_samplingfrequency = {}
+        dict_timeseries = {}
+        for subject in subjects:
+            halfpipe_timeseries_path = f'{path_halfpipe_timeseries}/{subject}/func/{task}/{subject}_{task}_feature-{strategy}_atlas-{atlas_name}_timeseries.tsv'
+            halfpipe_json_path = f'{path_halfpipe_timeseries}/{subject}/func/{task}/{subject}_{task}_feature-{strategy}_atlas-{atlas_name}_timeseries.json'
+            fmriprep_confounds_path = f'{path_fmriprep}/{subject}/func/{subject}_{task}_desc-confounds_timeseries.tsv'
+            if Path(halfpipe_timeseries_path).exists():
+                df_confounds = pd.read_csv(fmriprep_confounds_path, sep='\t')
+                dict_mean_framewise[subject] = df_confounds['framewise_displacement'].mean()
+                dict_scrubvolume[subject] = df_confounds.filter(like='motion_outlier').shape[1]
 
-    for sub in dict_clean_timeseries:
-        base_name = f"{sub}_{TASK}_seg-{NAME_ATLAS}{nroi}_desc-denoise{strategy}"
+                with open(halfpipe_json_path) as f:
+                    meta = json.load(f)
+                dict_samplingfrequency[subject] = meta.get("SamplingFrequency", None)
 
-        # Time series
-        ts_path = os.path.join(OUTPUT_PATH, sub, 'func', f"{base_name}_timeseries.tsv")
-        os.makedirs(os.path.dirname(ts_path), exist_ok=True)
-        dict_clean_timeseries[sub].columns = range(nroi)
-        dict_clean_timeseries[sub].to_csv(ts_path, sep='\t', index=False)
 
-        # Connectivity
-        conn_path = os.path.join(OUTPUT_PATH, sub, 'func', f"{base_name}_meas-PearsonCorrelation_relmat.tsv")
-        dict_corr[sub].columns = range(nroi)
-        dict_corr[sub].to_csv(conn_path, sep='\t', index=False)
+                df_timeseries = pd.read_csv(halfpipe_timeseries_path, sep='\t', header=None)
+                df_timeseries.columns = label_atlas
+                dict_timeseries[subject] = df_timeseries
+            else:
+                missing_list.append(subject)
 
-        # JSON sidecar
-        json_data = {
-            "ConfoundRegressors": regressors,
-            "NumberOfVolumesDiscardedByMotionScrubbing": dict_scrubvolume[sub],
-            "MeanFramewiseDisplacement": dict_mean_framewise[sub],
-            "SamplingFrequency": dict_samplingfrequency[sub]
+        # remove bad ROIs per denosing strategy
+        labels_to_drop = hp2b_utils.remove_bad_rois(dict_timeseries, label_atlas)
+        remaining_labels = list(set(label_atlas) - set(labels_to_drop))
+
+        dict_clean_timeseries = {}
+        for subject in dict_timeseries:
+            dict_clean_timeseries[subject] = hp2b_utils.impute_and_clean(dict_timeseries[subject])
+
+        # calculate Pearson correlation for each subject
+        # TODO: use nilearn connectivity module for this
+        dict_corr = {
+            sub: dict_clean_timeseries[sub].corr(method='pearson')
+            for sub in dict_clean_timeseries
         }
-        json_path = os.path.join(OUTPUT_PATH, sub, 'func', f"{base_name}_timeseries.json")
-        with open(json_path, 'w') as f:
-            json.dump(json_data, f, indent=4)
 
-# Export du fichier JSON commun de matrice
-summary_path = os.path.join(OUTPUT_PATH, 'meas-PearsonCorrelation_relmat.json')
-with open(summary_path, 'w') as f:
-    json.dump({
-        "Measure": "Pearson correlation",
-        "MeasureDescription": "Pearson correlation",
-        "Weighted": False,
-        "Directed": False,
-        "ValidDiagonal": True,
-        "StorageFormat": "Full",
-        "NonNegative": "",
-        "Code": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
-    }, f, indent=4)
+        nroi = len(remaining_labels)
+        regressors = strategy_confounds[strategy]
 
-print(f"Export terminé dans : {OUTPUT_PATH}")
+        for subject in dict_clean_timeseries:
+            subject_output = output_dir / subject / 'func' 
+            os.makedirs(subject_output, exist_ok=True)
+            base_name = f"{subject}_{task}_seg-{atlas_name}{nroi}_desc-denoise{strategy}"
 
-# Export du json de description de dataset
+            # Time series
+            ts_path = subject_output / f"{base_name}_timeseries.tsv"
+            dict_clean_timeseries[subject].columns = range(nroi)
+            dict_clean_timeseries[subject].to_csv(ts_path, sep='\t', index=False)
 
-json_dataset_description = {
-    "BIDSVersion": "1.9.0",
-    "License": None,
-    "Name": None,
-    "ReferencesAndLinks": [],
-    "DatasetDOI": None,
-    "DatasetType": "derivative",
-    "GeneratedBy": [
-        {
-            "Name": "Halfpipe2Bids",
-            "Version": "0.1",
-            "CodeURL": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
-        }
-    ],
-    "HowToAcknowledge": "Please refer to our repository: https://github.com/pbergeret12/HalfPipe2Bids/tree/main."
-}
+            # Connectivity
+            conn_path = subject_output / f"{base_name}_meas-PearsonCorrelation_relmat.tsv"
+            dict_corr[subject].columns = range(nroi)
+            dict_corr[subject].to_csv(conn_path, sep='\t', index=False)
 
-output_filename = 'dataset_description.json'
-output_file = os.path.join(OUTPUT_PATH, output_filename)
+            # JSON sidecar
+            json_data = {
+                "ConfoundRegressors": regressors,
+                "NumberOfVolumesDiscardedByMotionScrubbing": dict_scrubvolume[subject],
+                "MeanFramewiseDisplacement": dict_mean_framewise[subject],
+                "SamplingFrequency": dict_samplingfrequency[subject]
+            }
+            json_path = subject_output / f"{base_name}_timeseries.json"
+            with open(json_path, 'w') as f:
+                json.dump(json_data, f, indent=4)
 
-# Exporter le JSON
-with open(output_file, 'w') as f:
-    json.dump(json_dataset_description, f, indent=4)
 
-print(f"JSON exporté vers {OUTPUT_PATH}")
+def main(argv: None | Sequence[str] = None) -> None:
+    """Entry point."""
+    parser = global_parser()
+
+    args = parser.parse_args(argv)
+
+    workflow(args)

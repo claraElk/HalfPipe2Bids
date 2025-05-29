@@ -3,9 +3,9 @@
 import os
 
 # Paths
-PATH_HALFPIPE = 'data'
+PATH_HALFPIPE = 'halfpipe2bids/tests/data/dataset-ds000030_halfpipe1.2.3dev'
 PATH_ATLAS = 'data/atlas'
-OUTPUT_PATH = 'draft/output/BEP017'
+OUTPUT_PATH = 'output/BEP017'
 
 
 PATH_DERIVATIVES = os.path.join(PATH_HALFPIPE, 'derivatives')

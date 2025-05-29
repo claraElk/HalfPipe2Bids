@@ -1,11 +1,11 @@
-# functions.py
-
 import os
 import json
 import pandas as pd
 import logging
 from nilearn.signal import clean
 from nilearn import plotting
+
+hp2b_log = logging.getLogger("halfpipe2bids")
 
 
 def get_subjects(path_halfpipe_timeseries):
@@ -45,7 +45,7 @@ def impute_and_clean(df):
     df_filled = df.T.fillna(row_means).T
 
     if df_filled.isna().any().any():
-        logging.warning("Certaines valeurs n'ont pas pu être imputées.")
+        hp2b_log.warning("Certaines valeurs n'ont pas pu être imputées.")
 
     cleaned = clean(df_filled.values, detrend=True, standardize='zscore_sample')
     return pd.DataFrame(cleaned, columns=df.columns, index=df.index)
@@ -79,3 +79,54 @@ def get_coords(volume_path, label_schaefer, labels_to_drop):
     coords = plotting.find_parcellation_cut_coords(volume_path)
     df_coords = pd.DataFrame(coords, index=label_schaefer, columns=['x', 'y', 'z'])
     return df_coords[~df_coords.index.isin(labels_to_drop)]
+
+
+def crearte_dataset_metadata_json(output_dir) -> None:
+    """
+    Create dataset-level metadata JSON files for BIDS.
+    Args:
+        output_dir (Path): Le répertoire de sortie où le fichier JSON sera créé.
+    """
+    # Export du fichier JSON commun de matrice
+    summary_path = output_dir / 'meas-PearsonCorrelation_relmat.json'
+    with open(summary_path, 'w') as f:
+        json.dump({
+            "Measure": "Pearson correlation",
+            "MeasureDescription": "Pearson correlation",
+            "Weighted": False,
+            "Directed": False,
+            "ValidDiagonal": True,
+            "StorageFormat": "Full",
+            "NonNegative": "",
+            "Code": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
+        }, f, indent=4)
+
+    hp2b_log.info(f"Export terminé dans : {output_dir}")
+
+    # Export du json de description de dataset
+
+    json_dataset_description = {
+        "BIDSVersion": "1.9.0",
+        "License": None,
+        "Name": None,
+        "ReferencesAndLinks": [],
+        "DatasetDOI": None,
+        "DatasetType": "derivative",
+        "GeneratedBy": [
+            {
+                "Name": "Halfpipe2Bids",
+                "Version": "0.1",
+                "CodeURL": "https://github.com/pbergeret12/HalfPipe2Bids/tree/main"
+            }
+        ],
+        "HowToAcknowledge": "Please refer to our repository: https://github.com/pbergeret12/HalfPipe2Bids/tree/main."
+    }
+
+    output_filename = 'dataset_description.json'
+    output_file = output_dir / output_filename
+
+    # Exporter le JSON
+    with open(output_file, 'w') as f:
+        json.dump(json_dataset_description, f, indent=4)
+
+    hp2b_log.info(f"JSON exporté vers {output_dir}")
