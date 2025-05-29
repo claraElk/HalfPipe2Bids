@@ -3,22 +3,25 @@
 import os
 import json
 import pandas as pd
-import numpy as np
 import logging
 from nilearn.signal import clean
 from nilearn import plotting
 
 
 def get_subjects(path_halfpipe_timeseries):
+    # TODO: documentation
     return [sub for sub in os.listdir(path_halfpipe_timeseries)
             if os.path.isdir(os.path.join(path_halfpipe_timeseries, sub))]
 
 
 def load_label_schaefer(path_label_schaefer):
+    # TODO: documentation and eventually remove - we what this to work with 
+    # different atlases
     return list(pd.read_csv(path_label_schaefer, sep='\t', header=None)[1])
 
 
 def get_strategy_confounds(spec_path):
+    # TODO: documentation
     with open(spec_path, "r") as f:
         data = json.load(f)
 
@@ -37,6 +40,7 @@ def get_strategy_confounds(spec_path):
 
 
 def impute_and_clean(df):
+    # TODO: documentation and what's the imputation method?
     row_means = df.mean(axis=1, skipna=True)
     df_filled = df.T.fillna(row_means).T
 
@@ -48,6 +52,7 @@ def impute_and_clean(df):
 
 
 def remove_bad_rois(dict_timeseries, label_schaefer, threshold=0.5):
+    # TODO: documentation
     nan_counts = {label: 0 for label in label_schaefer}
     total_subjects = len(dict_timeseries)
 
@@ -70,6 +75,7 @@ def remove_bad_rois(dict_timeseries, label_schaefer, threshold=0.5):
 
 
 def get_coords(volume_path, label_schaefer, labels_to_drop):
+    # TODO: documentation
     coords = plotting.find_parcellation_cut_coords(volume_path)
     df_coords = pd.DataFrame(coords, index=label_schaefer, columns=['x', 'y', 'z'])
     return df_coords[~df_coords.index.isin(labels_to_drop)]

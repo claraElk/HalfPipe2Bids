@@ -3,9 +3,9 @@
 import os
 
 # Paths
-PATH_HALFPIPE = '/home/pierre/Documents/Halfpipe2Bids/data'
-PATH_ATLAS = '/home/pierre/Documents/Halfpipe2Bids/data/atlas'
-OUTPUT_PATH = '/home/pierre/Documents/Halfpipe2Bids/draft/output/BEP017'
+PATH_HALFPIPE = 'data'
+PATH_ATLAS = 'data/atlas'
+OUTPUT_PATH = 'draft/output/BEP017'
 
 
 PATH_DERIVATIVES = os.path.join(PATH_HALFPIPE, 'derivatives')
