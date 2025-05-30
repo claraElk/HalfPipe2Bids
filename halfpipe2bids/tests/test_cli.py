@@ -35,7 +35,7 @@ def test_help(capsys):
 def test_smoke(tmp_path, caplog):
     halfpipe_dir = resource_filename(
         "halfpipe2bids",
-        "test/data/dataset-ds000030_halfpipe1.2.3dev",
+        "tests/data/dataset-ds000030_halfpipe1.2.3dev",
     )
     output_dir = tmp_path / "output"
 
