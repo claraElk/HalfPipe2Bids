@@ -50,6 +50,16 @@ source = "vcs"
 version-file = "halfpipe2bids/_version.py"
 fallback-version = "0.0.0+ci"
 
+[tool.hatch.build.targets.sdist]
+exclude = [".git_archival.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["halfpipe2bids"]
+exclude = [
+  ".github",
+  "halfpipe2bids/tests/data"
+]
+
 [tool.pytest.ini_options]
 minversion = "7"
 log_cli_level = "INFO"
