@@ -35,7 +35,7 @@ pip install -e .
 
 Running the CLI:
 ```
-python halfpipe2bids/run.py halfpipe2bids/tests/data/dataset-ds000030_halfpipe1.2.3dev outputs
+halfpipe2bids halfpipe2bids/tests/data/dataset-ds000030_halfpipe1.2.3dev outputs group
 ```
 
 ### Using Docker
