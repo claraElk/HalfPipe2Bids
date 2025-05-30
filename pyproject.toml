@@ -45,6 +45,7 @@ packages = ["halfpipe2bids"]
 
 [tool.hatch.version]
 source = "vcs"
+fallback_version = "0.0.1"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "halfpipe2bids/_version.py"
