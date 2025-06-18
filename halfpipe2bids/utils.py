@@ -51,10 +51,6 @@ def get_strategy_confounds(spec_path, path_fmriprep, subject, task):
         strategy_name = feature.get("name")
         setting_name = feature.get("setting")        
 
-        strategy_confounds[strategy_name] = setting_to_confounds.get(
-            setting_name, []
-        )        
-
         confounds_removal = setting_to_confounds.get(
             setting_name, []
         )
@@ -62,10 +58,8 @@ def get_strategy_confounds(spec_path, path_fmriprep, subject, task):
         for confounds in confounds_removal:            
             # Compile and match
             pattern = re.compile(confounds)
-            for col in all_columns:
-                if pattern.fullmatch(col):
-                    # If a match is found, add the column to the list
-                    regressors.append(col)
+            regressors.append([col for col in all_columns if pattern.fullmatch(col)])
+            strategy_confounds[strategy_name] = regressors
 
     return strategy_confounds
 
