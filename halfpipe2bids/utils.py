@@ -24,7 +24,9 @@ def load_label_schaefer(path_label_schaefer):
     return list(pd.read_csv(path_label_schaefer, sep="\t", header=None)[1])
 
 
-def get_strategy_confounds(spec_path):
+def get_strategy_confounds(spec_path, path_fmriprep, subject, task):
+    import re
+
     # TODO: documentation
     with open(spec_path, "r") as f:
         data = json.load(f)
@@ -35,12 +37,35 @@ def get_strategy_confounds(spec_path):
     }
 
     strategy_confounds = {}
+
+    fmriprep_confounds_path = (
+    f"{path_fmriprep}/{subject}/func/"
+    f"{subject}_{task}_desc-confounds_timeseries.tsv"
+            )
+    
+    all_columns = pd.read_csv(fmriprep_confounds_path, sep="\t").columns.tolist()
+
+    regressors= []
+    # Initialize an empty list to store the regressors
     for feature in data.get("features", []):
         strategy_name = feature.get("name")
-        setting_name = feature.get("setting")
+        setting_name = feature.get("setting")        
+
         strategy_confounds[strategy_name] = setting_to_confounds.get(
             setting_name, []
+        )        
+
+        confounds_removal = setting_to_confounds.get(
+            setting_name, []
         )
+
+        for confounds in confounds_removal:            
+            # Compile and match
+            pattern = re.compile(confounds)
+            for col in all_columns:
+                if pattern.fullmatch(col):
+                    # If a match is found, add the column to the list
+                    regressors.append(col)
 
     return strategy_confounds
 
