@@ -45,11 +45,12 @@ def get_strategy_confounds(spec_path, path_fmriprep, subject, task):
     
     all_columns = pd.read_csv(fmriprep_confounds_path, sep="\t").columns.tolist()
 
-    regressors= []
     # Initialize an empty list to store the regressors
     for feature in data.get("features", []):
+        regressors= []
+
         strategy_name = feature.get("name")
-        setting_name = feature.get("setting")        
+        setting_name = feature.get("setting")               
 
         confounds_removal = setting_to_confounds.get(
             setting_name, []
@@ -58,9 +59,12 @@ def get_strategy_confounds(spec_path, path_fmriprep, subject, task):
         for confounds in confounds_removal:            
             # Compile and match
             pattern = re.compile(confounds)
-            regressors.append([col for col in all_columns if pattern.fullmatch(col)])
-            strategy_confounds[strategy_name] = regressors
+            for col in all_columns:
+                if pattern.fullmatch(col):
+                    regressors.append(col)
 
+        strategy_confounds[strategy_name] = regressors
+        
     return strategy_confounds
 
 
