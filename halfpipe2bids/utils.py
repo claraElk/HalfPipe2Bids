@@ -45,6 +45,7 @@ def get_strategy_confounds(spec_path):
 
     return strategy_confounds
 
+
 def regex_to_regressor(regex_confounds, confounds_columns):
     """
     Convert the list of regex patterns from HALFpipe to a list of regressors.
@@ -57,8 +58,9 @@ def regex_to_regressor(regex_confounds, confounds_columns):
     # TODO: To be merged with get_strategy_confounds
 
     # Compile the regex pattern
-    pattern = re.compile('|'.join(regex_confounds))
+    pattern = re.compile("|".join(regex_confounds))
     return [col for col in confounds_columns if pattern.fullmatch(col)]
+
 
 def impute_and_clean(df):
     # TODO: documentation and what's the imputation method?
