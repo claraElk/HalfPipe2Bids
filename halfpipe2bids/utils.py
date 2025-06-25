@@ -4,6 +4,7 @@ import pandas as pd
 import logging
 from nilearn.signal import clean
 from nilearn import plotting
+import re
 
 hp2b_log = logging.getLogger("halfpipe2bids")
 hp2b_url = "https://github.com/pbergeret12/HalfPipe2Bids/"
@@ -44,6 +45,27 @@ def get_strategy_confounds(spec_path):
 
     return strategy_confounds
 
+def regex_to_regressor(strategy_confounds, df_confounds):
+    # TODO: documentation
+    # TODO: To be merged with get_strategy_confounds
+    all_columns = df_confounds.columns.tolist()
+    strategy_confounds_regex = {}
+
+    # Initialize an empty list to store the regressors
+    for strategies in strategy_confounds.keys():
+        strategy_confounds_regex[strategies] = []
+
+        for regex_confounds in strategy_confounds[strategies]:
+            # Compile the regex pattern
+            pattern = re.compile(regex_confounds)
+            # Find all columns that match the regex
+            matching_columns = [
+                col for col in all_columns if pattern.fullmatch(col)
+            ]
+
+            strategy_confounds_regex[strategies].extend(matching_columns)
+        
+    return strategy_confounds_regex
 
 def impute_and_clean(df):
     # TODO: documentation and what's the imputation method?
