@@ -51,7 +51,7 @@ def regex_to_regressor(regex_confounds, confounds_columns):
     Convert the list of regex patterns from HALFpipe to a list of regressors.
     Args:
         regex_confounds (list): List of regex patterns.
-        confounds_columns (list): List of column names from fmriprep confound file.
+        confounds_columns (list): List of column names from confound file.
     Returns:
         list: List of confound columns based on fmriprep confound file.
     """
